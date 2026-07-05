@@ -31,7 +31,6 @@ jobs:
           TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
           TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
           COINGECKO_API_KEY: ${{ secrets.COINGECKO_API_KEY }}
-          THRESHOLD_PCT: "0.5"  # SEMENTARA buat tes paksa alert — balikin ke 5.0 setelah kebukti jalan
         run: python threshold_check.py
 
       - name: Commit updated state.json (kalau ada alert baru)
