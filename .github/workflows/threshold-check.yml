@@ -1,0 +1,40 @@
+name: Crypto Pulse - Threshold Check
+
+on:
+  schedule:
+    - cron: "0 * * * *"   # tiap jam, menit ke-0
+  workflow_dispatch: {}
+
+# Perlu izin tulis supaya job ini bisa commit balik state.json (dipakai
+# buat cooldown dedupe alert). Tanpa ini, GitHub Actions runner ephemeral
+# jadi state selalu "lupa" tiap run dan alert bisa spam tiap jam.
+permissions:
+  contents: write
+
+jobs:
+  check-threshold:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Run threshold check
+        env:
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+          COINGECKO_API_KEY: ${{ secrets.COINGECKO_API_KEY }}
+        run: python threshold_check.py
+
+      - name: Commit updated state.json (kalau ada alert baru)
+        uses: stefanzweifel/git-auto-commit-action@v5
+        with:
+          commit_message: "chore: update alert state [skip ci]"
+          file_pattern: state.json
