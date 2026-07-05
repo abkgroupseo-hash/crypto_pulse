@@ -3,15 +3,20 @@ Entry point: kirim 1 pesan digest pagi (harga + ringkasan berita).
 Dijadwalkan via cron, misal jam 07:00 setiap hari.
 """
 from datetime import datetime
+from zoneinfo import ZoneInfo
 
 import config
 import price_service
 import news_service
 import telegram_service
 
+JAKARTA_TZ = ZoneInfo("Asia/Jakarta")
+
 
 def format_message(prices: dict, news_bullets: list) -> str:
-    tanggal = datetime.now().strftime("%d %B %Y")
+    # Selalu pakai waktu Jakarta, terlepas dari timezone server/runner yang
+    # menjalankan script ini (GitHub Actions runner default-nya UTC).
+    tanggal = datetime.now(JAKARTA_TZ).strftime("%d %B %Y")
     lines = [f"₿ *CRYPTO PULSE* — {tanggal}", ""]
 
     for coin_id, data in prices.items():
